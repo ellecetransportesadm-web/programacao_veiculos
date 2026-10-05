@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Pandurata Transportes - Gestão e Programação de Frota</title>
+    <style>
+        :root {
+            --bg: #060b10;
+            --card: rgba(9, 18, 27, .82);
+            --bd: rgba(40, 168, 255, 0.18);
+            --tx: #e5ecec;
+            --mu: #3abac4;
+            --pr: #1687ff;
+            --nav: #03080d;
+            --danger: #ff3152;
+            --neon-green: #20ff8a;
+            --neon-blue: #d2d8db;
+            --neon-red: #ff365c;
+            --neon-orange: #ffae36
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        /* BARRA DE ROLAGEM SEMPRE VISÍVEL */
+        html {
+            scroll-behavior: smooth;
+            overflow-y: scroll;
+        }
+
+        body {
+            margin: 0;
+            font: 14px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+            background: radial-gradient(circle at 20% 10%, rgba(16, 75, 70, .22), transparent 32%), radial-gradient(circle at 20% 20%, rgba(24, 91, 150, .18), transparent 35%), #05090d;
+            color: var(--tx);
+            display: flex;
+            min-height: 100vh
+        }
+
+        body:before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(rgba(131, 8, 8, 0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px);
+            background-size: 32px 32px;
+            mask-image: linear-gradient(to bottom, #cfbbbb, transparent 40%);
+            z-index: -1
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit
+        }
+
+        button {
+            touch-action: manipulation
+        }
+
+        input,
+        select,
+        textarea {
+            border: 1px solid var(--bd);
+            border-radius: 6px;
+            padding: 8px 10px;
+            background: rgba(4, 12, 18, .9);
+            color: var(--tx);
+            max-width: 100%;
+            outline: none
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgba(40, 168, 255, .7);
+            box-shadow: 0 0 0 2px rgba(40, 168, 255, .12), 0 0 18px rgba(40, 168, 255, .12)
+        }
+
+        input:not([type=checkbox]),
+        select,
+        textarea {
+            text-transform: uppercase
+        }
+
+        textarea {
+            width: 100%;
+            resize: vertical
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0b131a, #06090a);
+            color: #f0eded;
+            border: 1px solid rgba(93, 190, 255, .4);
+            border-radius: 7px;
+            padding: 8px 14px;
+            cursor: pointer;
+            box-shadow: 0 0 16px rgba(4, 4, 5, 0.18);
+            transition: .22s ease
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+            box-shadow: 0 0 24px rgba(24, 135, 255, .34)
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed
+        }
+
+        .btn.ghost {
+            background: rgba(8, 18, 26, .72);
+            color: var(--tx);
+            border: 1px solid var(--bd)
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #9c1735, #f42e56);
+            box-shadow: 0 0 18px rgba(255, 49, 82, .22)
+        }
+
+        .mu {
+            color: var(--mu);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: .1px
+        }
+
+        .mobile-header,
+        .sidebar-overlay {
+            display: none
+        }
+
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 40%, rgb(21, 199, 169), transparent 35%), #02070b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px
+        }
+
+        .login-card {
+            background: rgba(8, 18, 26, .9);
+            border: 1px solid rgba(53, 255, 158, .25);
+            border-radius: 16px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 0 50px rgba(24, 255, 147, .08), 0 25px 70px rgba(0, 0, 0, .55);
+            backdrop-filter: blur(16px)
+        }
+
+        .login-card h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #dfffee;
+            text-align: center
+        }
+
+        .login-card p {
+            margin: 0 0 14px;
+            color: var(--mu);
+            text-align: center
+        }
+
+        .login-card form {
+            display: grid;
+            gap: 14px
+        }
+
+        .login-card label,
+        .modal-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .login-card input,
+        .login-card .btn {
+            width: 100%
+        }
+
+        .login-err {
+            color: #ffb4c0;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+            background: rgba(126, 15, 37, .28);
+            border: 1px solid rgba(255, 49, 82, .3);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 12px
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 5, 9, .76);
+            backdrop-filter: blur(7px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px
+        }
+
+        .modal-card {
+            background: linear-gradient(145deg, rgba(10, 23, 32, .98), rgba(4, 12, 18, .98));
+            border: 1px solid rgba(53, 180, 255, .24);
+            border-radius: 15px;
+            padding: 24px;
+            width: 100%;
+            max-width: 760px;
+            box-shadow: 0 0 50px rgba(24, 135, 255, .12), 0 25px 80px rgba(0, 0, 0, .55);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 92vh;
+            overflow: auto
+        }
+
+        .modal-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #dff5ff
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .modal-grid.three {
+            grid-template-columns: repeat(3, 1fr)
+        }
+
+        .modal-grid.full {
+            grid-template-columns: 1fr
+        }
+
+        .limit-info,
+        .alert-limit,
+        .route-suggest {
+            font-size: 11px;
+            padding: 7px 10px;
+            border-radius: 7px
+        }
+
+        .limit-info {
+            color: #91d7ff;
+            background: rgba(12, 93, 151, .15);
+            border: 1px solid rgba(40, 168, 255, .25)
+        }
+
+        .alert-limit {
+            color: #ffabb9;
+            background: rgba(120, 12, 38, .3);
+            border: 1px solid rgba(255, 49, 82, .5);
+            display: none;
+            font-weight: 600;
+        }
+
+        .route-suggest {
+            color: #8fffc1;
+            background: rgba(17, 125, 76, .18);
+            border: 1px solid rgba(32, 255, 138, .3);
+            display: none;
+            font-weight: 600;
+        }
+
+        .route-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .route-btn {
+            background: rgba(32, 255, 138, .15);
+            border: 1px solid rgba(32, 255, 138, .4);
+            color: #8fffc1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .route-btn:hover {
+            background: rgba(32, 255, 138, .35);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            justify-content: flex-end
+        }
+
+        aside {
+            width: 230px;
+            background: linear-gradient(180deg, rgba(3, 12, 19, .98), rgba(2, 7, 12, .98));
+            border-right: 1px solid rgba(71, 145, 170, .15);
+            color: #9fb8c2;
+            padding: 20px 12px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, .2)
+        }
+
+        aside h1 {
+            font-size: 16px;
+            color: #e9fff5;
+            margin: 0 8px 18px
+        }
+
+        aside h1 small {
+            display: block;
+            font-weight: 400;
+            color: #63808a;
+            font-size: 12px
+        }
+
+        .user-info-box {
+            background: linear-gradient(135deg, rgba(10, 48, 42, .72), rgba(9, 24, 35, .72));
+            border: 1px solid rgba(32, 255, 138, .14);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #fff;
+            box-shadow: inset 0 0 20px rgba(32, 255, 138, .03)
+        }
+
+        .user-info-box b {
+            color: var(--neon-green)
+        }
+
+        .nav {
+            background: none;
+            border: 1px solid transparent;
+            color: inherit;
+            text-align: left;
+            padding: 9px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .nav:hover {
+            background: rgba(27, 99, 116, .16);
+            border-color: rgba(53, 180, 255, .12)
+        }
+
+        .nav.on {
+            background: linear-gradient(90deg, rgba(18, 116, 218, .85), rgba(15, 79, 125, .35));
+            border-color: rgba(40, 168, 255, .3);
+            color: #fff;
+            box-shadow: 0 0 18px rgba(40, 168, 255, .13)
+        }
+
+        .sync {
+            margin-top: auto;
+            font-size: 12px;
+            padding: 8px;
+            color: #6e8992
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #61747b;
+            margin-right: 6px;
+            box-shadow: 0 0 8px currentColor
+        }
+
+        .dot.ok {
+            background: #20ff8a;
+            color: #20ff8a
+        }
+
+        .dot.err {
+            background: #ff365c;
+            color: #ff365c
+        }
+
+        .dot.busy {
+            background: #ffae36;
+            color: #ffae36
+        }
+
+        main {
+            margin-left: 230px;
+            padding: 24px 28px;
+            flex: 1;
+            min-width: 0;
+            overflow-x: hidden
+        }
+
+        h2 {
+            margin: 0 0 4px;
+            font-size: 20px;
+            color: #e9fff7
+        }
+
+        .sub {
+            color: var(--mu);
+            margin: 0 0 18px
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px
+        }
+
+        .kpi {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(10, 24, 32, .92), rgba(4, 12, 18, .78));
+            border: 1px solid rgba(130, 190, 205, .14);
+            border-radius: 12px;
+            padding: 13px 14px;
+            border-left: 3px solid var(--c, #94a3b8);
+            box-shadow: inset 0 0 28px rgba(255, 255, 255, .015), 0 8px 30px rgba(0, 0, 0, .18);
+            transition: .25s
+        }
+
+        .kpi:after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            right: -35px;
+            top: -35px;
+            border-radius: 50%;
+            background: var(--c, #28a8ff);
+            filter: blur(28px);
+            opacity: .13
+        }
+
+        .kpi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 26px rgba(40, 168, 255, .12)
+        }
+
+        .kpi b {
+            font-size: 22px;
+            display: block;
+            line-height: 1.2
+        }
+
+        .kpi span {
+            color: var(--mu);
+            font-size: 12px
+        }
+
+        .kpi small {
+            font-size: 12px;
+            color: var(--mu);
+            font-weight: 600;
+            margin-left: 4px
+        }
+
+        /* BARRA DE FILTROS LIMPA E CLEAN */
+        .bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            align-items: center;
+            background: rgba(7, 18, 26, 0.6);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(40, 168, 255, 0.12);
+        }
+
+        .bar input, .bar select {
+            background: rgba(4, 10, 16, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+
+        .bar input:focus, .bar select:focus {
+            border-color: var(--pr);
+        }
+
+        .profiles-bar {
+            display: flex;
+            gap: 8px;
+            overflow: auto;
+            padding-bottom: 8px;
+            margin-bottom: 14px
+        }
+
+        .profile-card {
+            background: rgba(9, 21, 29, .72);
+            border: 1px solid rgba(130, 190, 205, .15);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .profile-card:hover {
+            transform: translateY(-1px);
+            border-color: rgba(40, 168, 255, .35);
+            box-shadow: 0 0 18px rgba(40, 168, 255, .1)
+        }
+
+        .profile-card b {
+            color: #5fc7ff
+        }
+
+        .banner {
+            background: rgba(100, 70, 5, .24);
+            border: 1px solid rgba(255, 190, 40, .35);
+            color: #ffd66e;
+            padding: 8px 12px;
+            border-radius: 7px;
+            margin-bottom: 14px;
+            display: none
+        }
+
+        .card {
+            background: rgba(8, 19, 27, .74);
+            border: 1px solid rgba(130, 190, 205, .13);
+            border-radius: 11px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, .16)
+        }
+
+        .board-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 16px
+        }
+
+        .board {
+            display: flex;
+            gap: 10px;
+            align-items: start;
+            min-width: max-content;
+            padding-right: 24px
+        }
+
+        .col {
+            background: rgba(7, 17, 24, .66);
+            border: 1px solid rgba(100, 150, 165, .11);
+            border-radius: 12px;
+            padding: 8px;
+            width: 225px;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, .012)
+        }
+
+        .col h3 {
+            margin: 2px 4px 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between
+        }
+
+        .col h3 span {
+            color: var(--mu);
+            font-weight: 400
+        }
+
+        .vc {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(12, 25, 32, .94), rgba(4, 11, 17, .96));
+            border: 1px solid rgba(130, 190, 205, .13);
+            border-radius: 10px;
+            padding: 9px 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--c);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, .22), inset 0 0 22px rgba(32, 255, 138, .02);
+            transition: transform .25s, box-shadow .25s, border-color .25s
+        }
+
+        .vc:hover {
+            transform: translateY(-3px) scale(1.008);
+            border-color: var(--c);
+            box-shadow: 0 0 25px rgba(40, 168, 255, .15), 0 12px 28px rgba(0, 0, 0, .3)
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .bd {
+            font-size: 10.5px;
+            padding: 2px 6px;
+            border-radius: 99px;
+            background: var(--c);
+            color: #fff;
+            box-shadow: 0 0 10px var(--c)
+        }
+
+        .mt {
+            margin: 4px 0 2px;
+            font-size: 11px;
+            color: #ffb5c1;
+            background: rgba(130, 18, 43, .25);
+            border: 1px solid rgba(255, 49, 82, .18);
+            border-radius: 5px;
+            padding: 2px 6px
+        }
+
+        .carga-tag {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #83d4ff;
+            background: rgba(21, 111, 179, .16);
+            border: 1px solid rgba(40, 168, 255, .15);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 600
+        }
+
+        .vc select {
+            margin-top: 6px;
+            width: 100%;
+            padding: 4px;
+            font-size: 11.5px
+        }
+
+        .s-Disponível { --c: #20ff8a }
+        .s-Programado { --c: #28a8ff }
+        .s-Produzindo { --c: #20ff8a }
+        .s-Manutenção { --c: #ffae36 }
+        .s-Improdutivo { --c: #ff365c }
+        .s-Indisponível { --c: #ff365c }
+
+        section { display: none }
+        section.on { display: block }
+        .wrap { overflow: auto }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(5, 14, 20, .82);
+            border: 1px solid rgba(130, 190, 205, .12);
+            margin-bottom: 18px
+        }
+
+        th, td {
+            padding: 6px 9px;
+            text-align: left;
+            border-bottom: 1px solid rgba(130, 190, 205, .1);
+            vertical-align: top
+        }
+
+        th {
+            background: rgba(14, 31, 41, .96);
+            font-size: 11px;
+            color: #c4d5da;
+            font-weight: 700;
+            white-space: nowrap
+        }
+
+        .matrix td { text-align: center }
+        .matrix td:first-child { text-align: left }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #83a5ae
+        }
+
+        .date-filter input { padding: 5px 8px }
+
+        .program-table {
+            font-size: 10.5px;
+            color: #dbe7ea;
+            font-weight: 500
+        }
+
+        .program-table th, .program-table td { padding: 5px 7px }
+        .program-table tbody tr { transition: .18s }
+        .program-table tbody tr:hover { background: rgba(40, 168, 255, .08) }
+        .program-table td b { color: #ffffff }
+
+        #printArea {
+            display: none !important;
+            position: fixed;
+            left: -99999px;
+            top: -99999px;
+            width: 0;
+            height: 0;
+            overflow: hidden
+        }
+
+        @media(max-width:1024px) {
+            aside { width: 210px }
+            main { margin-left: 210px; padding: 20px }
+            .col { width: 215px }
+            .modal-grid.three { grid-template-columns: repeat(2, 1fr) }
+        }
+
+        @media(max-width:768px) {
+            body { display: block }
+            .mobile-header {
+                position: sticky;
+                top: 0;
+                z-index: 150;
+                height: 58px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 14px;
+                background: var(--nav);
+                color: #fff;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, .18)
+            }
+
+            .mobile-menu-btn {
+                border: 0;
+                background: #1a2d52;
+                color: #fff;
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-size: 18px
+            }
+
+            aside {
+                width: 270px;
+                transform: translateX(-105%);
+                transition: .25s;
+                box-shadow: 8px 0 24px rgba(0, 0, 0, .25);
+                z-index: 200
+            }
+
+            aside.open { transform: translateX(0) }
+
+            .sidebar-overlay.open {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 190;
+                background: rgba(15, 23, 42, .55)
+            }
+
+            main { margin-left: 0; width: 100%; padding: 16px 12px 28px }
+            .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px }
+            .bar { display: grid; grid-template-columns: 1fr 1fr }
+            .bar>* { width: 100%; min-width: 0; margin-left: 0 !important }
+            #q, #btnImprimirLote { grid-column: 1/-1 }
+            .modal-overlay { padding: 8px; align-items: flex-end }
+            .modal-card { max-width: none; max-height: 94vh; padding: 18px 14px; border-radius: 14px 14px 0 0 }
+            .modal-grid, .modal-grid.three { grid-template-columns: 1fr }
+            .modal-actions { flex-direction: column-reverse }
+            .modal-actions .btn { width: 100% }
+            table { min-width: 820px }
+        }
+
+        /* ===== ESTILO DE IMPRESSÃO ===== */
+        @media print {
+            @page { size: A4 portrait; margin: 8mm }
+            html, body { width: 210mm; margin: 0 !important; padding: 0 !important; background: #fff !important }
+            body>*:not(#printArea) { display: none !important }
+            #printArea {
+                display: block !important;
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: #fff;
+                color: #0f172a;
+                font-family: "Segoe UI", Arial, sans-serif
+            }
+            #printArea * { box-sizing: border-box }
+
+            .oc-sheet {
+                width: 100%;
+                min-height: 270mm;
+                padding: 10mm;
+                border: 1px solid #cbd5e1;
+                background: #fff;
+                break-inside: avoid;
+                page-break-inside: avoid
+            }
+            .page-break { break-after: page; page-break-after: always }
+            .page-break:last-child { break-after: auto; page-break-after: auto }
+
+            .oc-header-clean {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #1e4fbf;
+                padding-bottom: 12px;
+                margin-bottom: 20px
+            }
+            .oc-header-clean h1 { margin: 0; font-size: 20px; color: #1e4fbf }
+            .oc-header-clean span { font-size: 12px; color: #64748b }
+
+            .oc-section-title {
+                font-size: 13px;
+                font-weight: 700;
+                color: #1e4fbf;
+                text-transform: uppercase;
+                margin: 16px 0 8px;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 4px
+            }
+
+            .oc-grid-clean { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px }
+            .oc-grid-clean.four { grid-template-columns: repeat(4, minmax(0, 1fr)) }
+
+            .oc-box-clean { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; overflow-wrap: anywhere }
+            .oc-box-clean small { display: block; font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700 }
+            .oc-box-clean b { display: block; font-size: 12px }
+
+            .oc-footer-clean { display: flex; justify-content: space-between; gap: 40px; margin-top: 50px; text-align: center }
+            .oc-sign-line { width: 40%; border-top: 1px solid #94a3b8; padding-top: 6px; font-size: 12px; color: #334155 }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-header"><strong>Pandurata Transportes</strong><button type="button" class="mobile-menu-btn" id="btnMobileMenu" aria-label="Abrir menu">☰</button></div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>Acesso ao Sistema</h2>
+            <p>Pandurata Transportes</p>
+            <div id="loginErr" class="login-err">Usuário ou senha inválidos.</div>
+            <form id="loginForm" autocomplete="off">
+                <label>Usuário<input type="text" id="loginUser" required placeholder="Digite seu usuário" autocomplete="off"></label>
+                <label>Senha<input type="password" id="loginPass" required placeholder="Digite sua senha" autocomplete="new-password"></label>
+                <button type="submit" class="btn" id="btnLogin">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE PROGRAMAÇÃO DA CARGA -->
+    <div class="modal-overlay" id="modalCarga">
+        <div class="modal-card">
+            <h3>Programar Carga</h3>
+            <p class="mu" style="margin:0">Placa: <b id="mPlaca">-</b> | Filial: <b id="mFilial">-</b> | Perfil: <b id="mPerfil">-</b> | Motorista: <b id="mMotorista">-</b></p>
+            
+            <div class="limit-info" id="mCapInfo">Capacidade estimada: -</div>
+            <div class="alert-limit" id="mAlertLimit"></div>
+            
+            <div class="route-suggest" id="mRouteSuggest">
+                <span id="routeSuggestTxt">📍 Rotas Encontradas:</span>
+                <div class="route-buttons" id="mRouteButtons"></div>
+            </div>
+
+            <form id="formCarga">
+                <div class="modal-grid">
+                    <label>Data da Programação<input type="date" id="mDataProgramacao" required></label>
+                    <label>Depositante<input id="mDepositante" placeholder="PANDURATA"></label>
+                </div>
+                <div class="modal-grid">
+                    <label>Cliente / Embarcador<input id="mCliente" required placeholder="PANDURATA / AMBEV"></label>
+                    <label>Nº Pedido / Ordem<input id="mOrdem" placeholder="OC-10492"></label>
+                </div>
+                <div class="modal-grid">
+                    <label>Origem / Coleta<input id="mOrigem" required placeholder="GUARULHOS"></label>
+                    <label>Destino / Entrega<input id="mDestino" required placeholder="EXTREMA"></label>
+                </div>
+                <div class="modal-grid three">
+                    <label>DT (Roteiro)<input id="mDtRoteiro" placeholder="DT-12345"></label>
+                    <label>Rota Selecionada / Sugerida<input id="mRotaSugerida" placeholder="G710" required></label>
+                    <label>Agendamento<input type="datetime-local" id="mAgendamento"></label>
+                </div>
+                <div class="modal-grid">
+                    <label>CPF do Motorista<input id="mCpf" readonly placeholder="AUTOMÁTICO"></label>
+                    <label>Telefone do Motorista<input id="mTelefone" readonly placeholder="AUTOMÁTICO"></label>
+                </div>
+                <div class="modal-grid three">
+                    <label>Acondicionamento
+                        <select id="mTipoCarga">
+                            <option value="PALETIZADA">PALETIZADA</option>
+                            <option value="BATIDA">CARGA BATIDA</option>
+                        </select>
+                    </label>
+                    <label>Peso Total (KG)<input type="number" step="1" min="0" id="mPeso" required></label>
+                    <label>Volume<input type="number" step="1" min="0" id="mVolume"></label>
+                </div>
+                <div class="modal-grid">
+                    <label>M³ / Cubagem<input type="number" step="0.01" min="0" id="mM3" required></label>
+                    <label>Qtd. Pallets<input type="number" min="0" id="mPallets"></label>
+                </div>
+                <div class="modal-grid full"><label>Produto / Mercadoria<input id="mProduto"></label></div>
+                <div class="modal-grid full"><label>Observações / Instruções<textarea id="mObs" rows="2"></textarea></label></div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn ghost" id="btnCancelarCarga">Cancelar</button>
+                    <button type="button" class="btn ghost" id="btnPrintOC">Imprimir Ordem</button>
+                    <button type="submit" class="btn">Salvar Programação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalLote">
+        <div class="modal-card">
+            <h3>Imprimir Ordens em Lote</h3>
+            <p class="mu">Selecione os veículos programados:</p>
+            <div id="listaLote" style="display:grid;gap:8px;max-height:300px;overflow:auto;border:1px solid var(--bd);padding:10px;border-radius:6px"></div>
+            <div class="modal-actions">
+                <button class="btn ghost" id="btnFecharLote">Cancelar</button>
+                <button class="btn" id="btnImprimirLoteConfirm">Imprimir Selecionadas</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea"></div>
+
+    <aside>
+        <h1>Pandurata Transportes<small>Programação diária</small></h1>
+        <div class="user-info-box">
+            <div>Bem-vindo(a), <b id="uName">-</b></div>
+            <div style="font-size:10px;color:#94a3b8">Nível: <span id="uRole">-</span></div>
+        </div>
+        <button class="nav on" data-v="prog">Programação de Veículos</button>
+        <button class="nav" data-v="cargas">Cargas Programadas</button>
+        <button class="nav" data-v="hist">Histórico e Produtividade</button>
+        <button class="nav" data-v="conf">Configurações</button>
+        <button class="nav" id="btnLogout" style="margin-top:10px;color:#fca5a5">Sair do Sistema</button>
+        <div class="sync"><span class="dot" id="dot"></span><span id="syncTxt">Aguardando</span></div>
+    </aside>
+
+    <main>
+        <div class="banner" id="demo">Não foi possível ler a planilha. Exibindo dados de demonstração.</div>
+        
+        <section id="prog" class="on">
+            <h2>Programação de Veículos</h2>
+            <p class="sub" id="hoje"></p>
+            <div class="kpis" id="kpis"></div>
+            
+            <!-- BARRA DE FILTROS CLEAN -->
+            <div class="bar">
+                <input id="q" type="search" placeholder="BUSCAR PLACA, MOTORISTA OU FILIAL">
+                <select id="ff"><option value="">TODAS AS FILIAIS</option></select>
+                <select id="fp"><option value="">TODOS OS PERFIS</option></select>
+                <select id="fs"><option value="">TODOS OS STATUS</option></select>
+                <button class="btn ghost" id="reload">Atualizar</button>
+                <button class="btn" id="btnImprimirLote" style="margin-left:auto">Imprimir Lote</button>
+            </div>
+
+            <div class="profiles-bar" id="profileCards"></div>
+
+            <div class="card">
+                <h3 style="margin:0 0 12px">Leitura por filial e perfil</h3>
+                <div class="wrap">
+                    <table class="matrix">
+                        <thead id="filialPerfilHead"></thead>
+                        <tbody id="filialPerfilBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="board-wrapper">
+                <div class="board" id="board"></div>
+            </div>
+        </section>
+
+        <section id="cargas">
+            <h2>Cargas Programadas</h2>
+            <p class="sub">Veículos programados ou produzindo.</p>
+            <div class="bar">
+                <div class="date-filter">
+                    <label for="dataProgFiltro">DATA PROGRAMAÇÃO:</label>
+                    <input type="date" id="dataProgFiltro">
+                </div>
+                <button class="btn ghost" id="limparDataProg">Todas as datas</button>
+            </div>
+            <div class="wrap">
+                <table class="program-table">
+                    <thead>
+                        <tr>
+                            <th>Data Prog.</th>
+                            <th>Filial</th>
+                            <th>Placa</th>
+                            <th>Perfil</th>
+                            <th>Motorista</th>
+                            <th>Depositante</th>
+                            <th>Cliente</th>
+                            <th>Ordem</th>
+                            <th>Origem → Destino</th>
+                            <th>DT Roteiro</th>
+                            <th>Rota</th>
+                            <th>Volume</th>
+                            <th>Peso</th>
+                            <th>M³</th>
+                            <th>Pallets</th>
+                            <th>Tipo Carga</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblCargas"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="hist">
+            <h2>Histórico e Produtividade</h2>
+            <p class="sub">Resumo dos fechamentos diários.</p>
+            <div class="bar">
+                <label>De <input type="date" id="d1"></label>
+                <label>Até <input type="date" id="d2"></label>
+                <button class="btn" id="filtrar">Filtrar Histórico</button>
+                <button class="btn ghost" id="btnExportHist">Exportar CSV</button>
+                <button class="btn danger" id="btnDeleteHist" style="margin-left:auto">Apagar Filtrados</button>
+            </div>
+            <div class="kpis" id="hk"></div>
+            <h3>Resumo por filial e perfil</h3>
+            <div class="wrap"><table id="hsum"></table></div>
+            <h3>Detalhamento</h3>
+            <div class="wrap"><table id="hdet"></table></div>
+        </section>
+
+        <section id="conf">
+            <h2>Configurações e Virada de Dia</h2>
+            <p class="sub">Fechamento diário e limpeza do histórico.</p>
+            <div class="card">
+                <b>Fechamento de dia</b>
+                <p class="mu">Veículos disponíveis sem carga serão marcados como improdutivos por falta de carga e enviados ao histórico.</p>
+                <div class="bar" style="margin:0">
+                    <label>Data <input type="date" id="simDate"></label>
+                    <button class="btn danger" id="sim">Executar Fechamento</button>
+                    <button class="btn danger" id="clr">Apagar Todo Histórico</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const STATUS = ["Disponível", "Programado", "Produzindo", "Manutenção", "Improdutivo"], 
+              ORDER_PERFIS = ["RODOTREM", "CARRETA", "TRUCK", "TOCO", "VUC", ".3/4", "VAN", "FIORINO"];
+        
+        // PADRÃO INICIAL DE CAPACIDADES
+        let CAPACIDADES = { 
+            RODOTREM: { pesoMax: 50, m3Max: 110, palletsMax: 56 }, 
+            CARRETA: { pesoMax: 32, m3Max: 90, palletsMax: 30 }, 
+            TRUCK: { pesoMax: 15, m3Max: 45, palletsMax: 14 }, 
+            TOCO: { pesoMax: 8, m3Max: 35, palletsMax: 10 }, 
+            VUC: { pesoMax: 3.5, m3Max: 20, palletsMax: 6 }, 
+            ".3/4": { pesoMax: 4.5, m3Max: 24, palletsMax: 8 }, 
+            VAN: { pesoMax: 1.8, m3Max: 10, palletsMax: 4 }, 
+            FIORINO: { pesoMax: .7, m3Max: 3.5, palletsMax: 2 } 
+        };
+
+        const $ = s => document.querySelector(s), norm = s => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])).toUpperCase(), escAttr = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const getTodayFmt = () => new Date().toLocaleDateString("pt-BR"), todayIso = () => { const d = new Date(), z = d.getTimezoneOffset(); return new Date(d - z * 60000).toISOString().slice(0, 10) }, ls = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } }, st = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+        
+        const URL_ = "https://script.google.com/macros/s/AKfycbzrdGGDt-uKgrFq86ZqXe59nwjuNHF2dvTcWw93upASTkFcXXoN5cTcfOG0IuOCB7z7/exec";
+        let V = [], ROTAS = [], USUARIOS = [], HIST = [], MAP = {}, loggedUser = ls("frota_logged_user", null), vehicleToProgram = null;
+
+        const FIELDS = { placa: ["placa"], motorista: ["motorista"], perfil: ["tipo", "perfil", "tipo de veiculo", "tipo veículo", "veiculo", "tipo_frota"], filial: ["filial", "unidade", "base", "centro", "centro de distribuicao", "cd"], status: ["status"], motivo: ["motivo"], obs: ["obs", "observacao", "observacoes"] };
+        const CARGA_FIELDS = { dataProgramacao: ["data", "data programacao", "data de programacao", "data programação", "data da programação", "data agendamento", "dt programacao", "dt programação"], depositante: ["depositante"], cliente: ["cliente", "embarcador"], ordem: ["ordem", "pedido", "numero pedido", "n pedido", "oc"], origem: ["origem", "coleta"], destino: ["destino", "entrega"], dtRoteiro: ["dt roteiro", "dt (roteiro)", "roteiro", "data roteiro"], rotaSugerida: ["rota sugerida", "rota_sugerida"], volume: ["volume", "vol"], peso: ["peso", "peso total", "peso total ton", "peso total kg", "peso kg"], m3: ["m3", "m³", "cubagem", "volume m3"], cpf: ["cpf"], telefone: ["telefone", "fone", "celular"], agendamento: ["agendamento", "hora agendamento"], tipoCarga: ["tipocarga", "tipo carga", "acondicionamento", "tipo de carga"], pallets: ["qtpallets", "qtdpallets", "qtd pallets", "quantidade pallets", "pallets"], codigoRota: ["codigo rota", "código da rota", "rota codigo", "rota"], produto: ["produto", "mercadoria"], obs: ["obs", "observacao", "observações", "observacoes"] };
+
+        function findVal(row, aliases) { const keys = Object.keys(row || {}); const k = keys.find(key => aliases.some(a => norm(key) === norm(a))); return k !== undefined ? row[k] : "" }
+        function firstVal(...vals) { return vals.find(v => v !== undefined && v !== null && String(v).trim() !== "") ?? "" }
+        function dateOnly(v) { const s = String(v ?? "").trim(); if (!s) return ""; if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10); const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/); if (m) return `${m[3]}-${String(m[2]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}`; const d = new Date(s); return Number.isNaN(d.getTime()) ? "" : new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
+        function buildCarga(row) { const nested = row?.carga || {}, out = {}; for (const [key, aliases] of Object.entries(CARGA_FIELDS)) out[key] = firstVal(nested[key], findVal(row, aliases)); out.dataProgramacao = dateOnly(out.dataProgramacao); return out }
+        function mapCols(row) { MAP = {}; for (const f in FIELDS) MAP[f] = Object.keys(row).find(k => FIELDS[f].some(n => norm(k) === norm(n))) || f } 
+        function normStatus(s) { const n = norm(s); return STATUS.find(x => n && norm(x).startsWith(n.slice(0, 5))) || "Disponível" } 
+        function sync(s, t) { $("#dot").className = "dot " + s; $("#syncTxt").textContent = t }
+
+        function checkAuth() { const ok = !!loggedUser; $("#loginOverlay").style.display = ok ? "none" : "flex"; if (ok) { $("#uName").textContent = loggedUser.nome || loggedUser.usuario; $("#uRole").textContent = loggedUser.nivel || "Operador" } }
+        
+        $("#loginForm").onsubmit = async e => { e.preventDefault(); const btn = $("#btnLogin"), err = $("#loginErr"), usuario = $("#loginUser").value.trim().toLowerCase(), senha = $("#loginPass").value; err.style.display = "none"; btn.disabled = true; btn.textContent = "Verificando..."; try { const r = await fetch(URL_, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "login", usuario, senha }) }), d = await r.json(); if (d.authenticated) { loggedUser = { usuario: d.usuario, nome: d.nome, nivel: d.nivel }; st("frota_logged_user", loggedUser); checkAuth(); return } } catch (ex) { console.warn(ex) } const normLogin = s => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase(); const getField = (o, names) => { const ks = Object.keys(o || {}); for (const n of names) { const k = ks.find(k => normLogin(k) === normLogin(n)); if (k !== undefined) return o[k] } return "" }; const u = USUARIOS.find(x => normLogin(getField(x, ["usuario", "usuário", "user", "login", "username"])) === normLogin(usuario) && String(getField(x, ["senha", "password", "pass"])).trim() === senha); if (u) { loggedUser = { usuario: getField(u, ["usuario", "usuário", "user", "login", "username"]) || usuario, nome: getField(u, ["nome", "nome do usuario", "nome do usuário"]) || usuario, nivel: getField(u, ["nivel", "nível", "perfil", "role"]) || "Operador" }; st("frota_logged_user", loggedUser); checkAuth() } else { err.textContent = "Usuário ou senha inválidos."; err.style.display = "block" } btn.disabled = false; btn.textContent = "Entrar" };
+        $("#btnLogout").onclick = () => { if (confirm("Deseja sair?")) { localStorage.removeItem("frota_logged_user"); loggedUser = null; checkAuth() } };
+
+        function build(rows) { if (!rows.length) { V = []; render(); return } mapCols(rows[0]); V = rows.filter(r => findVal(r, FIELDS.placa) || r.placa).map(r => { const carga = buildCarga(r), perfil = firstVal(findVal(r, FIELDS.perfil), r["Tipo de Veículo"]); return { raw: r, placa: String(firstVal(findVal(r, FIELDS.placa), r.placa) || "").toUpperCase().trim(), motorista: String(firstVal(findVal(r, FIELDS.motorista), r.motorista) || "").toUpperCase().trim(), perfil: String(perfil || "OUTROS").toUpperCase().trim(), filial: String(firstVal(findVal(r, FIELDS.filial), r.filial) || "SEM FILIAL").toUpperCase().trim(), status: normStatus(firstVal(findVal(r, FIELDS.status), r.status)), motivo: String(firstVal(findVal(r, FIELDS.motivo), r.motivo) || "").toUpperCase().trim(), obs: String(firstVal(findVal(r, FIELDS.obs), r.obs) || "").toUpperCase().trim(), cpf: String(firstVal(findVal(r, ["cpf"]), r.cpf) || "").trim(), telefone: String(firstVal(findVal(r, ["telefone", "fone", "celular"]), r.telefone) || "").trim(), carga: Object.values(carga).some(x => String(x ?? "").trim() !== "") ? carga : null } }); const perf = [...new Set(V.map(v => v.perfil))].sort(), fil = [...new Set(V.map(v => v.filial))].sort(); $("#fp").innerHTML = '<option value="">TODOS OS PERFIS</option>' + perf.map(x => `<option value="${escAttr(x)}">${esc(x)}</option>`).join(""); $("#ff").innerHTML = '<option value="">TODAS AS FILIAIS</option>' + fil.map(x => `<option value="${escAttr(x)}">${esc(x)}</option>`).join(""); $("#fs").innerHTML = '<option value="">TODOS OS STATUS</option>' + STATUS.map(x => `<option value="${escAttr(x)}">${esc(x)}</option>`).join("") }
+
+        function render() { const q = norm($("#q").value), ff = $("#ff").value, fp = $("#fp").value, fs = $("#fs").value, base = V.filter(v => (!ff || v.filial === ff) && (!fp || v.perfil === fp)), total = base.length, c = s => base.filter(v => s.includes(v.status)).length, p = n => total ? (n / total * 100).toFixed(1) + "%" : "0%", disp = c(["Disponível"]), prog = c(["Programado", "Produzindo"]), man = c(["Manutenção"]), imp = c(["Improdutivo"]); $("#kpis").innerHTML = [["Total da frota", total, "#1e4fbf", ""], ["Disponíveis / Programados", `${disp} / ${prog}`, "#16a34a", `(${p(disp)} / ${p(prog)})`], ["Em manutenção", man, "#d97706", `(${p(man)})`], ["Improdutivos", imp, "#dc2626", `(${p(imp)})`]].map(x => `<div class="kpi" style="--c:${x[2]}"><b>${x[1]}<small>${x[3]}</small></b><span>${x[0]}</span></div>`).join(""); const pg = {}; base.forEach(v => pg[v.perfil] = (pg[v.perfil] || 0) + 1); $("#profileCards").innerHTML = Object.keys(pg).sort().map(x => `<div class="profile-card" onclick="filterByProfile('${escAttr(x)}')"><span>${esc(x)}:</span><b>${pg[x]}</b><small>(${p(pg[x])})</small></div>`).join(""); const f = V.filter(v => (!q || norm([v.placa, v.motorista, v.perfil, v.filial].join(" ")).includes(q)) && (!ff || v.filial === ff) && (!fp || v.perfil === fp) && (!fs || v.status === fs)), g = {}; f.forEach(v => (g[v.perfil] ??= []).push(v)); const ord = [...ORDER_PERFIS.filter(x => g[x]), ...Object.keys(g).filter(x => !ORDER_PERFIS.includes(x)).sort()]; $("#board").innerHTML = ord.map(per => `<div class="col"><h3>${esc(per)}<span>${g[per].length}</span></h3>${g[per].map(v => `<div class="vc s-${v.status}"><div class="top"><b>${esc(v.placa)}</b><span class="bd">${esc(v.status)}</span></div><div class="mu">${esc(v.motorista || "SEM MOTORISTA")}</div>${v.cpf || v.telefone ? `<div class="mu">${v.cpf ? "CPF: " + esc(v.cpf) : ""}${v.cpf && v.telefone ? " · " : ""}${v.telefone ? "TEL: " + esc(v.telefone) : ""}</div>` : ""}<div class="mu">FILIAL: ${esc(v.filial)}</div>${v.carga ? `<div class="carga-tag">📦 ${esc(v.carga.cliente)} (${esc(v.carga.origem)} → ${esc(v.carga.destino)})</div>` : ""}${v.motivo ? `<div class="mt">${esc(v.motivo)}</div>` : ""}<select onchange="alterarStatusVeiculo('${escAttr(v.placa)}',this.value)">${STATUS.map(s => `<option value="${escAttr(s)}" ${s === v.status ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></div>`).join("") || '<p class="mu">SEM VEÍCULOS</p>'}</div>`).join(""); renderFilialPerfil(); renderCargas() }
+        function renderFilialPerfil() { const ff = $("#ff").value, data = V.filter(v => !ff || v.filial === ff), fil = [...new Set(data.map(v => v.filial))].sort(), exist = [...new Set(data.map(v => v.perfil))], per = [...ORDER_PERFIS.filter(x => exist.includes(x)), ...exist.filter(x => !ORDER_PERFIS.includes(x)).sort()]; $("#filialPerfilHead").innerHTML = `<tr><th>Filial</th>${per.map(x => `<th>${esc(x)}</th>`).join("")}<th>Total</th><th>Disponíveis</th><th>Programados</th></tr>`; $("#filialPerfilBody").innerHTML = fil.map(x => { const a = data.filter(v => v.filial === x), t = a.length; return `<tr><td><b>${esc(x)}</b></td>${per.map(y => { const n = a.filter(v => v.perfil === y).length; return `<td><b>${n}</b><div class="mu">${t ? (n / t * 100).toFixed(1) : 0}%</div></td>` }).join("")}<td><b>${t}</b></td><td><b>${a.filter(v => v.status === "Disponível").length}</b></td><td><b>${a.filter(v => ["Programado", "Produzindo"].includes(v.status)).length}</b></td></tr>` }).join("") || '<tr><td>Nenhum veículo encontrado.</td></tr>' }
+        function renderCargas() { const filtro = $("#dataProgFiltro")?.value || "", a = V.filter(v => v.carga && ["Programado", "Produzindo"].includes(v.status) && (!filtro || dateOnly(v.carga.dataProgramacao) === filtro)); $("#tblCargas").innerHTML = a.map(v => `<tr><td>${esc(v.carga.dataProgramacao || "-")}</td><td>${esc(v.filial)}</td><td><b>${esc(v.placa)}</b></td><td>${esc(v.perfil)}</td><td>${esc(v.motorista || "-")}</td><td>${esc(v.carga.depositante || "-")}</td><td>${esc(v.carga.cliente || "-")}</td><td>${esc(v.carga.ordem || "-")}</td><td>${esc(v.carga.origem || "-")} → ${esc(v.carga.destino || "-")}</td><td>${esc(v.carga.dtRoteiro || "-")}</td><td>${esc(v.carga.rotaSugerida || v.carga.codigoRota || "-")}</td><td>${esc(v.carga.volume || "-")}</td><td>${esc(v.carga.peso || "-")} KG</td><td>${esc(v.carga.m3 || "-")}</td><td>${esc(v.carga.pallets || "-")}</td><td>${esc(v.carga.tipoCarga || "-")}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn ghost" onclick="imprimirCargaUnica('${escAttr(v.placa)}')">Imprimir</button><button class="btn danger" onclick="cancelarProgramacao('${escAttr(v.placa)}')">Cancelar</button></div></td></tr>`).join("") || '<tr><td colspan="17" style="text-align:center">Nenhuma carga programada para a data selecionada.</td></tr>' }
+        function filterByProfile(x) { $("#fp").value = $("#fp").value === x ? "" : x; render() }
+
+        function alterarStatusVeiculo(placa, status) {
+            const v = V.find(x => x.placa === placa);
+            if (!v) return;
+            const s = normStatus(status);
+            if (s !== "Programado") {
+                v.status = s;
+                if (s === "Disponível") v.carga = null;
+                render();
+                return
+            }
+            vehicleToProgram = v;
+            $("#mPlaca").textContent = v.placa;
+            $("#mFilial").textContent = v.filial;
+            $("#mPerfil").textContent = v.perfil;
+            $("#mMotorista").textContent = v.motorista || "NÃO INFORMADO";
+            
+            const cap = CAPACIDADES[v.perfil] || { pesoMax: 30, m3Max: 80, palletsMax: 28 };
+            $("#mCapInfo").textContent = `Capacidade cadastrada (${v.perfil}): MÁX ${cap.pesoMax} Ton | ${cap.m3Max} m³ | ${cap.palletsMax} Pallets`;
+            
+            $("#formCarga").reset();
+            const c = v.carga || { cliente: "PANDURATA", origem: v.filial === "SEM FILIAL" ? "" : v.filial };
+            $("#mDataProgramacao").value = c.dataProgramacao || todayIso();
+            $("#mCpf").value = c.cpf || v.cpf || "";
+            $("#mTelefone").value = c.telefone || v.telefone || "";
+            
+            const pairs = [["mDepositante", "depositante"], ["mCliente", "cliente"], ["mOrdem", "ordem"], ["mOrigem", "origem"], ["mDestino", "destino"], ["mDtRoteiro", "dtRoteiro"], ["mRotaSugerida", "rotaSugerida"], ["mAgendamento", "agendamento"], ["mTipoCarga", "tipoCarga"], ["mPeso", "peso"], ["mVolume", "volume"], ["mM3", "m3"], ["mPallets", "pallets"], ["mProduto", "produto"], ["mObs", "obs"]];
+            for (const [id, key] of pairs) $("#" + id).value = c[key] || ($("#" + id).tagName === "SELECT" ? "PALETIZADA" : "");
+            
+            $("#modalCarga").style.display = "flex";
+            validarCapacidadeCarga();
+            verificarSugestaoRota();
+        }
+
+        // VALIDAÇÃO AJUSTADA DO M3 E CAPACIDADES
+        function validarCapacidadeCarga() {
+            if (!vehicleToProgram) return true;
+            const c = CAPACIDADES[vehicleToProgram.perfil] || { pesoMax: 30, m3Max: 80, palletsMax: 28 };
+            const m3Digitado = parseFloat($("#mM3").value) || 0;
+            const palletsDigitados = parseInt($("#mPallets").value) || 0;
+            const pesoDigitado = (parseFloat($("#mPeso").value) || 0) / 1000; // converter KG p/ Tonelada
+
+            let msgs = [];
+            let invalid = false;
+
+            // Validação M3_Max
+            if (m3Digitado > c.m3Max) {
+                msgs.push(`⚠️ M³ CUBAGEM EXCEDIDA: Digitado ${m3Digitado.toFixed(2)}m³ supera o máximo permitido de ${c.m3Max}m³ no cadastro do veículo (${vehicleToProgram.perfil}).`);
+                invalid = true;
+            }
+
+            // Validação Pallets
+            if (palletsDigitados > c.palletsMax) {
+                msgs.push(`⚠️ PALLETS EXCEDIDOS: Digitado ${palletsDigitados} pal. supera o limite de ${c.palletsMax} pal.`);
+                invalid = true;
+            }
+
+            // Validação Peso Toneladas
+            if (pesoDigitado > c.pesoMax) {
+                msgs.push(`⚠️ PESO EXCEDIDO: ${pesoDigitado.toFixed(2)} Ton supera o máximo de ${c.pesoMax} Ton.`);
+                invalid = true;
+            }
+
+            if (msgs.length > 0) {
+                $("#mAlertLimit").innerHTML = msgs.join("<br>");
+                $("#mAlertLimit").style.display = "block";
+            } else {
+                $("#mAlertLimit").style.display = "none";
+            }
+
+            return !invalid;
+        }
+
+        // BUSCA E SELEÇÃO DE ROTAS PELO DESTINO
+        function verificarSugestaoRota() {
+            const dest = norm($("#mDestino").value.trim());
+            if (!dest) {
+                $("#mRouteSuggest").style.display = "none";
+                return;
+            }
+
+            // Busca na lista de rotas por tudo que coincidir no destino
+            const encontradas = ROTAS.filter(r => {
+                const str = norm(Object.values(r).join(" "));
+                return str.includes(dest);
+            });
+
+            const codigos = [...new Set(encontradas.map(r => r.Rota || r.Rota_Codigo || r.Codigo || Object.values(r)[0]).filter(Boolean))];
+
+            if (codigos.length > 0) {
+                $("#mRouteSuggest").style.display = "block";
+                $("#routeSuggestTxt").textContent = `📍 ${codigos.length} Rota(s) encontrada(s) para o destino:`;
+                
+                let btnsHtml = codigos.map(cod => `<button type="button" class="route-btn" onclick="selecionarRota('${escAttr(cod)}')">${esc(cod)}</button>`).join("");
+                $("#mRouteButtons").innerHTML = btnsHtml;
+
+                if (!$("#mRotaSugerida").value) {
+                    $("#mRotaSugerida").value = codigos[0];
+                }
+            } else {
+                $("#mRouteSuggest").style.display = "none";
+            }
+        }
+
+        function selecionarRota(codigo) {
+            $("#mRotaSugerida").value = codigo;
+        }
+
+        ["mPeso", "mM3", "mPallets"].forEach(x => $("#" + x).oninput = validarCapacidadeCarga);
+        $("#mTipoCarga").onchange = validarCapacidadeCarga;
+        ["mOrigem", "mDestino"].forEach(x => $("#" + x).oninput = () => { verificarSugestaoRota(); validarCapacidadeCarga(); });
+
+        $("#btnCancelarCarga").onclick = () => { $("#modalCarga").style.display = "none"; vehicleToProgram = null; render() };
+
+        function cargaForm() {
+            return {
+                dataProgramacao: $("#mDataProgramacao").value,
+                depositante: $("#mDepositante").value.trim().toUpperCase(),
+                cliente: $("#mCliente").value.trim().toUpperCase(),
+                ordem: $("#mOrdem").value.trim().toUpperCase(),
+                origem: $("#mOrigem").value.trim().toUpperCase(),
+                destino: $("#mDestino").value.trim().toUpperCase(),
+                dtRoteiro: $("#mDtRoteiro").value.trim().toUpperCase(),
+                rotaSugerida: $("#mRotaSugerida").value.trim().toUpperCase(),
+                volume: $("#mVolume").value,
+                pesoKg: $("#mPeso").value,
+                peso: $("#mPeso").value,
+                m3: $("#mM3").value,
+                pallets: $("#mPallets").value,
+                tipoCarga: $("#mTipoCarga").value,
+                agendamento: $("#mAgendamento").value,
+                codigoRota: $("#mRotaSugerida").value.trim().toUpperCase(),
+                produto: $("#mProduto").value.trim().toUpperCase(),
+                obs: $("#mObs").value.trim(),
+                cpf: $("#mCpf").value.trim(),
+                telefone: $("#mTelefone").value.trim()
+            }
+        }
+
+        async function postApi(body) { const r = await fetch(URL_, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) }); return r.json() }
+
+        $("#formCarga").onsubmit = async e => {
+            e.preventDefault();
+            if (!vehicleToProgram) return;
+            
+            if (!validarCapacidadeCarga()) {
+                alert("Atenção! Corrija os valores antes de prosseguir. A capacidade permitida do veículo foi excedida.");
+                return;
+            }
+
+            const c = cargaForm(), v = vehicleToProgram;
+            v.status = "Programado";
+            v.carga = c;
+            $("#modalCarga").style.display = "none";
+            vehicleToProgram = null;
+            render();
+
+            sync("busy", "Gravando programação...");
+            try {
+                const resp = await postApi({
+                    action: "salvarProgramacao",
+                    usuario: loggedUser?.usuario || "SISTEMA",
+                    dados: {
+                        data: c.dataProgramacao, dataProgramacao: c.dataProgramacao, filial: v.filial, placa: v.placa, motorista: v.motorista, status: v.status, perfil: v.perfil, tipoVeiculo: v.perfil, depositante: c.depositante, cliente: c.cliente, ordem: c.ordem, origem: c.origem, destino: c.destino, dtRoteiro: c.dtRoteiro, rotaSugerida: c.rotaSugerida || c.codigoRota, volume: c.volume, pesoKg: c.pesoKg, peso: c.pesoKg, m3: c.m3, cpf: c.cpf || v.cpf, telefone: c.telefone || v.telefone, agendamento: c.agendamento, tipoCarga: c.tipoCarga, qtdPallets: c.pallets, pallets: c.pallets, produto: c.produto, obs: c.obs, ...c
+                    }
+                });
+                if (resp.status !== "success") throw new Error(resp.message || "Erro na API");
+                sync("ok", "Programação gravada");
+                await loadData()
+            } catch (x) {
+                sync("err", "Falha ao gravar");
+                alert("Não foi possível gravar a programação: " + x.message)
+            }
+        };
+
+        // GERAÇÃO DO IMPRESSO DE ORDEM DE COLETA COM ROTA
+        function gerarHTMLOrdemColeta(v) {
+            const c = v.carga || {};
+            return `<div class="oc-sheet page-break">
+                <div class="oc-header-clean">
+                    <div><h1>PANDURATA TRANSPORTES</h1><span>ORDEM DE COLETA E PROGRAMAÇÃO DE EMBARQUE</span></div>
+                    <div style="text-align:right"><b>DATA: ${getTodayFmt()}</b><br><small>PEDIDO / OC: ${esc(c.ordem || "S/N")}</small></div>
+                </div>
+                <div class="oc-section-title">1. Veículo e motorista</div>
+                <div class="oc-grid-clean four">
+                    <div class="oc-box-clean"><small>Placa</small><b>${esc(v.placa)}</b></div>
+                    <div class="oc-box-clean"><small>Perfil</small><b>${esc(v.perfil)}</b></div>
+                    <div class="oc-box-clean"><small>Filial</small><b>${esc(v.filial)}</b></div>
+                    <div class="oc-box-clean"><small>Motorista</small><b>${esc(v.motorista || "NÃO INFORMADO")}</b></div>
+                </div>
+                <div class="oc-section-title">2. Dados do itinerário e Rota</div>
+                <div class="oc-grid-clean">
+                    <div class="oc-box-clean"><small>Cliente / Embarcador</small><b>${esc(c.cliente || "PANDURATA")}</b></div>
+                    <div class="oc-box-clean"><small>Origem</small><b>${esc(c.origem || "-")}</b></div>
+                    <div class="oc-box-clean"><small>Destino</small><b>${esc(c.destino || "-")}</b></div>
+                </div>
+                <div class="oc-grid-clean">
+                    <div class="oc-box-clean"><small>Código da Rota</small><b style="color:#1e4fbf;font-size:14px">${esc(c.rotaSugerida || c.codigoRota || "-")}</b></div>
+                    <div class="oc-box-clean"><small>DT Roteiro</small><b>${esc(c.dtRoteiro || "-")}</b></div>
+                    <div class="oc-box-clean"><small>Depositante</small><b>${esc(c.depositante || "-")}</b></div>
+                </div>
+                <div class="oc-section-title">3. Especificações da Carga</div>
+                <div class="oc-grid-clean four">
+                    <div class="oc-box-clean"><small>Peso Total</small><b>${esc(c.peso || "-")} KG</b></div>
+                    <div class="oc-box-clean"><small>Cubagem (M³)</small><b>${esc(c.m3 || "-")} M³</b></div>
+                    <div class="oc-box-clean"><small>Pallets</small><b>${esc(c.pallets || "-")}</b></div>
+                    <div class="oc-box-clean"><small>Volume</small><b>${esc(c.volume || "-")}</b></div>
+                </div>
+                <div class="oc-grid-clean">
+                    <div class="oc-box-clean"><small>Acondicionamento</small><b>${esc(c.tipoCarga || "PALETIZADA")}</b></div>
+                    <div class="oc-box-clean"><small>Produto</small><b>${esc(c.produto || "PRODUTOS PANDURATA")}</b></div>
+                    <div class="oc-box-clean"><small>Agendamento</small><b>${esc(c.agendamento || "SEM AGENDAMENTO")}</b></div>
+                </div>
+                <div class="oc-section-title">4. Observações e Instruções</div>
+                <div class="oc-box-clean" style="min-height:50px"><b>${esc(c.obs || "SEM OBSERVAÇÕES ADICIONAIS.")}</b></div>
+                <div class="oc-footer-clean">
+                    <div class="oc-sign-line">Expedidor / Programador</div>
+                    <div class="oc-sign-line">Motorista</div>
+                </div>
+            </div>`
+        }
+
+        function executarImpressao(h) { $("#printArea").innerHTML = h; requestAnimationFrame(() => window.print()) }
+        window.addEventListener("afterprint", () => $("#printArea").innerHTML = "");
+        function imprimirCargaUnica(p) { const v = V.find(x => x.placa === p); if (v?.carga) executarImpressao(gerarHTMLOrdemColeta(v)) }
+        $("#btnPrintOC").onclick = () => { if (vehicleToProgram) executarImpressao(gerarHTMLOrdemColeta({ ...vehicleToProgram, carga: cargaForm() })) };
+
+        async function cancelarProgramacao(placa) { const v = V.find(x => x.placa === placa); if (!v || !v.carga) return; if (!confirm(`Cancelar a programação da placa ${placa}?`)) return; sync("busy", "Cancelando..."); try { const r = await postApi({ action: "cancelarProgramacao", placa: placa, dataProgramacao: v.carga.dataProgramacao || "", ordem: v.carga.ordem || "" }); if (r.status !== "success") throw new Error(r.message || "Erro"); await loadData(); sync("ok", "Cancelado com sucesso") } catch (e) { sync("err", "Falha ao cancelar"); alert("Erro: " + e.message) } }
+        
+        $("#btnImprimirLote").onclick = () => { const a = V.filter(v => v.status === "Programado" && v.carga); if (!a.length) return alert("Nenhum veículo programado."); $("#listaLote").innerHTML = a.map(v => `<label><input type="checkbox" class="chkLote" value="${escAttr(v.placa)}" checked> <b>${esc(v.placa)}</b> - ${esc(v.filial)} - ${esc(v.carga.cliente)}</label>`).join(""); $("#modalLote").style.display = "flex" };
+        $("#btnFecharLote").onclick = () => $("#modalLote").style.display = "none";
+        $("#btnImprimirLoteConfirm").onclick = () => { const p = [...document.querySelectorAll(".chkLote:checked")].map(x => x.value), a = V.filter(v => p.includes(v.placa)); if (!a.length) return alert("Selecione ao menos uma ordem."); $("#modalLote").style.display = "none"; executarImpressao(a.map(gerarHTMLOrdemColeta).join("")) };
+
+        function histFiltrado() { const a = $("#d1").value, b = $("#d2").value; return HIST.filter(x => { const d = String(x["Data Fechamento"] || x.data || "").slice(0, 10); return (!a || d >= a) && (!b || d <= b) }) }
+        function renderHist() { const h = histFiltrado(), disp = h.filter(x => norm(x.Status) === "disponivel").length, imp = h.filter(x => norm(x.Status) === "improdutivo").length; $("#hk").innerHTML = [["Registros", h.length, "#1e4fbf"], ["Disponíveis", disp, "#16a34a"], ["Improdutivos", imp, "#dc2626"]].map(x => `<div class="kpi" style="--c:${x[2]}"><b>${x[1]}</b><span>${x[0]}</span></div>`).join(""); const g = {}; h.forEach(x => { const f = x.Filial || "SEM FILIAL", p = x.Perfil || "OUTROS", k = f + "|" + p; (g[k] ??= { filial: f, perfil: p, total: 0, improd: 0 }).total++; if (norm(x.Status) === "improdutivo") g[k].improd++ }); $("#hsum").innerHTML = '<thead><tr><th>Filial</th><th>Perfil</th><th>Total</th><th>Improdutivos</th></tr></thead><tbody>' + Object.values(g).map(x => `<tr><td>${esc(x.filial)}</td><td>${esc(x.perfil)}</td><td>${x.total}</td><td>${x.improd}</td></tr>`).join("") + '</tbody>'; $("#hdet").innerHTML = '<thead><tr><th>Data</th><th>Filial</th><th>Placa</th><th>Perfil</th><th>Motorista</th><th>Status</th><th>Motivo</th></tr></thead><tbody>' + h.map(x => `<tr><td>${esc(x["Data Fechamento"] || x.data || "")}</td><td>${esc(x.Filial || "")}</td><td>${esc(x.Placa || "")}</td><td>${esc(x.Perfil || "")}</td><td>${esc(x.Motorista || "")}</td><td>${esc(x.Status || "")}</td><td>${esc(x.Motivo || "")}</td></tr>`).join("") + '</tbody>' }
+        $("#filtrar").onclick = renderHist;
+        
+        $("#btnExportHist").onclick = () => { const h = histFiltrado(); if (!h.length) return alert("Sem dados para exportar."); const keys = Object.keys(h[0]), csv = '\ufeff' + [keys.join(";"), ...h.map(r => keys.map(k => '"' + String(r[k] ?? "").replace(/"/g, '""') + '"').join(";"))].join("\n"), a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "historico_frota.csv"; a.click(); URL.revokeObjectURL(a.href) };
+        async function apagarHistorico(d1, d2) { if (!confirm("Confirma a exclusão do histórico?")) return; try { await postApi({ action: "limparHistorico", d1, d2 }); await loadData() } catch (e) { alert("Falha ao apagar histórico.") } }
+        $("#btnDeleteHist").onclick = () => apagarHistorico($("#d1").value, $("#d2").value);
+        $("#clr").onclick = () => apagarHistorico("", "");
+        
+        $("#sim").onclick = async () => { const date = $("#simDate").value; if (!date) return; const rows = V.map(v => ({ filial: v.filial, placa: v.placa, perfil: v.perfil, motorista: v.motorista, status: v.status === "Disponível" && !v.carga ? "Improdutivo" : v.status, motivo: v.status === "Disponível" && !v.carga ? "FALTA DE CARGA" : v.motivo, obs: v.obs })); try { await postApi({ action: "salvarFechamento", date, rows }); alert("Fechamento gravado."); await loadData() } catch (e) { alert("Falha no fechamento.") } };
+
+        document.querySelectorAll("aside .nav[data-v]").forEach(b => b.onclick = () => { document.querySelectorAll("aside .nav").forEach(x => x.classList.remove("on")); b.classList.add("on"); document.querySelectorAll("main section").forEach(x => x.classList.remove("on")); $("#" + b.dataset.v).classList.add("on"); fecharMenuMobile() });
+        function fecharMenuMobile() { document.querySelector("aside").classList.remove("open"); $("#sidebarOverlay").classList.remove("open") }
+        $("#btnMobileMenu").onclick = () => { document.querySelector("aside").classList.toggle("open"); $("#sidebarOverlay").classList.toggle("open") };
+        $("#sidebarOverlay").onclick = fecharMenuMobile;
+
+        function mesclarProgramacoesNaFrota(frota, programacao) { const latest = {}; (programacao || []).forEach(p => { const placa = String(p.Placa || p.placa || "").trim().toUpperCase(); if (!placa) return; const data = String(p.Data || ""); if (!latest[placa] || data >= String(latest[placa].Data || "")) latest[placa] = p; }); return (frota || []).map(v => { const placa = String(v.Placa || v.placa || "").trim().toUpperCase(), p = latest[placa]; if (!p) return v; return Object.assign({}, v, p, { Placa: placa, Status: p.Status || "Programado", CPF: p.CPF || v.CPF || "", Telefone: p.Telefone || v.Telefone || "" }); }); }
+
+        // CARREGAMENTO DOS DADOS DA PLANILHA E CAPACIDADES DINÂMICAS
+        async function loadData() {
+            sync("busy", "Carregando dados...");
+            $("#hoje").textContent = "Data: " + getTodayFmt();
+            try {
+                const r = await fetch(URL_ + "?t=" + Date.now()), d = await r.json();
+                ROTAS = d.rotas || [];
+                USUARIOS = d.usuarios || [];
+                HIST = d.historico || [];
+
+                // Mapeia Capacidades dinâmicas enviadas da planilha caso existam
+                if (d.capacidades && Array.isArray(d.capacidades)) {
+                    d.capacidades.forEach(c => {
+                        const perfil = norm(c.Perfil || c.Tipo || "").toUpperCase();
+                        if (perfil) {
+                            CAPACIDADES[perfil] = {
+                                pesoMax: parseFloat(c.Peso_Max || c.PesoMax || c.pesoMax || 30),
+                                m3Max: parseFloat(c.M3_Max || c.M3Max || c.m3Max || 80),
+                                palletsMax: parseInt(c.Pallets_Max || c.PalletsMax || c.palletsMax || 28)
+                            };
+                        }
+                    });
+                }
+
+                build(mesclarProgramacoesNaFrota(d.frota || d.programados || d.veiculos || d.cargas || [], d.programacao || []));
+                render();
+                renderHist();
+                checkAuth();
+                $("#demo").style.display = "none";
+                sync("ok", "Conectado à planilha")
+            } catch (e) {
+                console.warn(e);
+                $("#demo").style.display = "block";
+                build([{ Placa: "ABC1D23", Motorista: "CARLOS SILVA", Perfil: "CARRETA", Filial: "GUARULHOS", Status: "Disponível" }, { Placa: "DEF4G56", Motorista: "JOÃO SOUZA", Perfil: "TRUCK", Filial: "EXTREMA", Status: "Disponível" }]);
+                render();
+                renderHist();
+                checkAuth();
+                sync("err", "Modo demonstração")
+            }
+        }
+
+        ["q", "ff", "fp", "fs"].forEach(x => $("#" + x).addEventListener(x === "q" ? "input" : "change", render));
+        $("#dataProgFiltro").addEventListener("change", renderCargas);
+        $("#limparDataProg").onclick = () => { $("#dataProgFiltro").value = ""; renderCargas() };
+        $("#reload").onclick = loadData;
+        ["simDate", "d1", "d2"].forEach(x => $("#" + x).value = todayIso());
+        
+        checkAuth();
+        loadData();
+    </script>
+</body>
+
+</html>
